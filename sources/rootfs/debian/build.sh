@@ -205,7 +205,7 @@ sudo -n mmdebstrap \
   --components="$COMPONENTS" \
   --include="$PACKAGES" \
   --skip=check/qemu \
-  --setup-hook='mkdir -p "$1/usr/libexec/qemu-binfmt" && cp /usr/bin/qemu-aarch64-static "$1/usr/libexec/qemu-binfmt/aarch64-binfmt-P" && chmod 0755 "$1/usr/libexec/qemu-binfmt/aarch64-binfmt-P"' \
+  --setup-hook='mkdir -p "$1/usr/libexec/qemu-binfmt" "$1/usr/bin" && cp /usr/bin/qemu-aarch64-static "$1/usr/libexec/qemu-binfmt/aarch64-binfmt-P" 2>/dev/null || true; cp /usr/bin/qemu-aarch64-static "$1/usr/bin/qemu-aarch64-static" 2>/dev/null || true; chmod 0755 "$1/usr/libexec/qemu-binfmt/aarch64-binfmt-P" "$1/usr/bin/qemu-aarch64-static" 2>/dev/null || true' \
   --aptopt='Acquire::Languages "none"' \
   --aptopt='APT::Install-Recommends "false"' \
   --aptopt='APT::Install-Suggests "false"' \

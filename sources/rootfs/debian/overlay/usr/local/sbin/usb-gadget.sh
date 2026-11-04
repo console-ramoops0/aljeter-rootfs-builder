@@ -58,7 +58,8 @@ ip link set "$IFACE" up 2>/dev/null || true
 # Start DHCP server for host computer if dnsmasq is available
 if command -v dnsmasq >/dev/null 2>&1; then
     killall dnsmasq 2>/dev/null || true
-    dnsmasq --interface="$IFACE" \
+    dnsmasq --conf-file=/dev/null \
+      --interface="$IFACE" \
       --bind-interfaces \
       --dhcp-range=172.16.42.2,172.16.42.10,255.255.255.0,1h \
       --listen-address=172.16.42.1 \
