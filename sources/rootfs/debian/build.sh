@@ -197,7 +197,15 @@ mkdir -p "$ROOTFS_DIR" "$STAGE"
 trap 'sudo -n rm -rf "$ROOTFS_DIR" "$STAGE"' EXIT
 
 say "Bootstrapping Debian $SUITE/$ARCH with $MMDEBSTRAP_MODE + qemu"
+KEYRING_ARGS=()
+if [ -f "/usr/share/keyrings/debian-archive-keyring.gpg" ]; then
+  KEYRING_ARGS=(--keyring="/usr/share/keyrings/debian-archive-keyring.gpg")
+elif [ -f "/etc/apt/trusted.gpg.d/debian-archive-keyring.gpg" ]; then
+  KEYRING_ARGS=(--keyring="/etc/apt/trusted.gpg.d/debian-archive-keyring.gpg")
+fi
+
 sudo -n mmdebstrap \
+  "${KEYRING_ARGS[@]}" \
   --mode="$MMDEBSTRAP_MODE" \
   --format=directory \
   --architectures="$ARCH" \

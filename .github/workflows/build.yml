@@ -31,7 +31,7 @@ jobs:
             git ca-certificates curl make bc bison flex \
             gcc-aarch64-linux-gnu device-tree-compiler libfdt-dev libssl-dev libelf-dev \
             python3 python3-pip rsync cpio gzip xz-utils zstd \
-            e2fsprogs qemu-user-static binfmt-support mmdebstrap \
+            e2fsprogs qemu-user-static binfmt-support mmdebstrap debian-archive-keyring \
             openssh-client openssl kmod file dosfstools
           sudo update-binfmts --enable qemu-aarch64 || true
 
