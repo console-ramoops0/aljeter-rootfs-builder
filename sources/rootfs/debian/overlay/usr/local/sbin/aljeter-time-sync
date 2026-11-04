@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+# Sanders has no reliable battery-backed RTC. Wait for NetworkManager to have
+# a usable route before enabling timesyncd; otherwise the initial 1970 clock
+# can remain visible until the next manual sync.
+while ! nm-online -q -t 30; do
+    sleep 15
+done
+
+timedatectl set-ntp true >/dev/null 2>&1 || true
+
+i=0
+while [ "$i" -lt 120 ]; do
+    synchronized="$(timedatectl show -p NTPSynchronized --value 2>/dev/null || true)"
+    [ "$synchronized" = yes ] && exit 0
+    sleep 2
+    i=$((i + 1))
+done
+
+# Keep the unit retryable if NTP was unavailable during this boot.
+exit 1

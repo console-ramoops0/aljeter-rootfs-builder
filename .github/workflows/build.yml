@@ -1,0 +1,64 @@
+name: Build Aljeter Debian ARM64 & Mainline Kernel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Debian suite (trixie or bookworm)
+        required: true
+        type: choice
+        default: trixie
+        options:
+          - trixie
+          - bookworm
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools and rootfs dependencies
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git ca-certificates curl make bc bison flex \
+            gcc-aarch64-linux-gnu device-tree-compiler libfdt-dev libssl-dev libelf-dev \
+            python3 python3-pip rsync cpio gzip xz-utils zstd \
+            e2fsprogs qemu-user-static binfmt-support mmdebstrap \
+            openssh-client openssl kmod file dosfstools
+          sudo update-binfmts --enable qemu-aarch64
+
+      - name: Build Mainline Kernel & Boot Image
+        run: |
+          set -eux
+          bash sh/build.sh kernel
+
+      - name: Build Debian ARM64 RootFS
+        run: |
+          set -eux
+          export ALJETER_DEBIAN_SUITE="${{ github.event.inputs.suite || 'trixie' }}"
+          bash sh/build.sh rootfs debian
+
+      - name: Package Release Artifacts
+        id: package
+        run: |
+          mkdir -p deploy/
+          # Copy latest kernel artifacts
+          cp -r build/mainline/releases/* deploy/ || true
+          # Copy latest rootfs artifacts
+          cp -r build/rootfs/debian/releases/* deploy/ || true
+          ls -la deploy/
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aljeter-debian-mainline
+          path: deploy/
+          if-no-files-found: error
