@@ -48,13 +48,13 @@ def main() -> None:
         parser.error(f"Not a valid flattened device tree: {args.dtb}")
 
     if args.board_id is None and args.board_subtype is None:
-        tuples = [(args.msm-id, board, subtype, args.soc_rev)
+        tuples = [(args.msm_id, board, subtype, args.soc_rev)
                   for board, subtype in ALJETER_BOARD_PAIRS]
         # Also emit MSM8920 (320) board pairs for cross-SoC compatibility
         tuples.extend([(320, board, subtype, args.soc_rev)
                        for board, subtype in ALJETER_BOARD_PAIRS if board == 0x43])
     elif args.board_id is not None and args.board_subtype is not None:
-        tuples = [(args.msm-id, args.board_id, args.board_subtype, args.soc_rev)]
+        tuples = [(args.msm_id, args.board_id, args.board_subtype, args.soc_rev)]
     else:
         parser.error("Specify both --board-id and --board-subtype or neither")
 
