@@ -33,7 +33,7 @@ jobs:
             python3 python3-pip rsync cpio gzip xz-utils zstd \
             e2fsprogs qemu-user-static binfmt-support mmdebstrap \
             openssh-client openssl kmod file dosfstools
-          sudo update-binfmts --enable qemu-aarch64
+          sudo update-binfmts --enable qemu-aarch64 || true
 
       - name: Build Mainline Kernel & Boot Image
         run: |

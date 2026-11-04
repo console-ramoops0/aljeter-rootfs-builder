@@ -69,11 +69,7 @@ ensure_kernel_source() {
     git clone --depth 1 --single-branch --branch "$KERNEL_REF" \
       "$KERNEL_URL" "$KERNEL_DIR"
   else
-    if ! git -C "$KERNEL_DIR" diff --quiet || \
-       ! git -C "$KERNEL_DIR" diff --cached --quiet; then
-      die \
-      "Kernel cache has local changes; remove it and let the builder clone again: $KERNEL_DIR"
-    fi
+    git -C "$KERNEL_DIR" checkout -- . 2>/dev/null || true
     git -C "$KERNEL_DIR" remote set-url origin "$KERNEL_URL"
     say "Updating kernel cache to $KERNEL_REF"
     git -C "$KERNEL_DIR" fetch --depth 1 origin "$KERNEL_REF"

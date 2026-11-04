@@ -43,6 +43,15 @@ esac
 require_build_tools
 acquire_lock
 ensure_kernel_source
+
+# Fix missing header in net/qrtr/smd.c if present in the tree
+if [ -f "$KERNEL_DIR/net/qrtr/smd.c" ] && \
+   grep -q "qcom_smd_qrtr_uevent" "$KERNEL_DIR/net/qrtr/smd.c" 2>/dev/null && \
+   ! grep -q "linux/mod_devicetable.h" "$KERNEL_DIR/net/qrtr/smd.c" 2>/dev/null; then
+  say "Applying missing <linux/mod_devicetable.h> include to net/qrtr/smd.c"
+  sed -i '/#include <linux\/soc\/qcom\/qrtr.h>/a #include <linux/mod_devicetable.h>' "$KERNEL_DIR/net/qrtr/smd.c"
+fi
+
 ensure_firmware_source
 prepare_gpu_firmware
 [ -s "$LK2ND_IMAGE" ] || die "LK2ND image not found: $LK2ND_IMAGE"
