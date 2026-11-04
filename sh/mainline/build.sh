@@ -153,8 +153,8 @@ python3 "$QCDT_TOOL" "$STAGE/dt.img" "$STAGE/aljeter.dtb"
 
 cat "$IMAGE" "$DTB" > "$STAGE/Image.gz-dtb"
 
-BOOT_ROOT="${ALJETER_BOOT_ROOT:-LABEL=debian-root}"
-BOOT_CMDLINE="${ALJETER_BOOT_CMDLINE:-console=tty0 console=ttyMSM0,115200 root=$BOOT_ROOT rootfstype=ext4 rw rootwait panic=10 fsck.repair=yes lpm_levels.sleep_disabled=1 clk_ignore_unused pd_ignore_unused rootdelay=5}"
+BOOT_ROOT="${ALJETER_BOOT_ROOT:-PARTLABEL=userdata}"
+BOOT_CMDLINE="${ALJETER_BOOT_CMDLINE:-console=tty0 console=ttyMSM0,115200 root=$BOOT_ROOT rootfstype=ext4 rw rootwait panic=10 fsck.repair=yes lpm_levels.sleep_disabled=1 clk_ignore_unused pd_ignore_unused net.ifnames=0 rootdelay=5}"
 BOOT_IMAGE="$STAGE/boot.img"
 
 say "Creating Android boot images for Aljeter (MSM8937)"

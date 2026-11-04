@@ -33,7 +33,35 @@ for i in $(seq 1 30); do
     [ -n "$UDC" ] && break
     sleep 1
 done
-[ -n "${UDC:-}" ] || { echo no-udc >&2; exit 1; }
+[ -n "${UDC:-}" ] || { echo "no-udc" >&2; exit 1; }
 echo "$UDC" > "$G/UDC"
-ip addr add 172.16.42.1/24 dev usb0 2>/dev/null || true
-ip link set usb0 up 2>/dev/null || true
+
+# Wait for interface to appear and detect its name
+IFACE="usb0"
+for i in $(seq 1 10); do
+    if [ -d "/sys/class/net/usb0" ]; then
+        IFACE="usb0"
+        break
+    fi
+    DETECTED="$(ls /sys/class/net/ 2>/dev/null | grep -E '^(usb|rndis|enx)' | head -n 1 || true)"
+    if [ -n "$DETECTED" ]; then
+        IFACE="$DETECTED"
+        break
+    fi
+    sleep 0.5
+done
+
+ip addr flush dev "$IFACE" 2>/dev/null || true
+ip addr add 172.16.42.1/24 dev "$IFACE" 2>/dev/null || true
+ip link set "$IFACE" up 2>/dev/null || true
+
+# Start DHCP server for host computer if dnsmasq is available
+if command -v dnsmasq >/dev/null 2>&1; then
+    killall dnsmasq 2>/dev/null || true
+    dnsmasq --interface="$IFACE" \
+      --bind-interfaces \
+      --dhcp-range=172.16.42.2,172.16.42.10,255.255.255.0,1h \
+      --listen-address=172.16.42.1 \
+      --port=0 \
+      --leasefile-ro 2>/dev/null || true
+fi

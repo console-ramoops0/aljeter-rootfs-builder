@@ -1,5 +1,5 @@
 [Unit]
-Description=Synchronize Sanders clock after networking is available
+Description=Synchronize Aljeter clock after networking is available
 Wants=network-online.target
 After=NetworkManager.service
 ConditionPathExists=/usr/bin/timedatectl

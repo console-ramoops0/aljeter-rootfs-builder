@@ -152,6 +152,10 @@ EOF
     "$ROOTFS_DIR/etc/systemd/system/multi-user.target.wants/aljeter-time-sync.service"
   ln -sfn ../aljeter-grow-rootfs.service \
     "$ROOTFS_DIR/etc/systemd/system/multi-user.target.wants/aljeter-grow-rootfs.service"
+  ln -sfn /lib/systemd/system/NetworkManager.service \
+    "$ROOTFS_DIR/etc/systemd/system/multi-user.target.wants/NetworkManager.service" || true
+  ln -sfn /lib/systemd/system/haveged.service \
+    "$ROOTFS_DIR/etc/systemd/system/sysinit.target.wants/haveged.service" || true
 }
 
 configure_root_password() {
@@ -208,21 +212,41 @@ for MODULE_LINK in \
 done
 audit_rootfs_symlinks
 
-# Install Aljeter firmware
+# Install Aljeter firmware (WCNSS, Wi-Fi, GPU, DSP)
 say "Installing Aljeter firmware"
 mkdir -p "$ROOTFS_DIR/usr/lib/firmware/qcom/msm8937/motorola/aljeter" \
-         "$ROOTFS_DIR/usr/lib/firmware/wlan/prima"
+         "$ROOTFS_DIR/usr/lib/firmware/wlan/prima" \
+         "$ROOTFS_DIR/usr/lib/firmware/qcom"
 
-if [ -s "$FIRMWARE_SOURCE_DIR/wlan/WCNSS_qcom_wlan_nv.bin" ]; then
-  cp "$FIRMWARE_SOURCE_DIR/wlan/WCNSS_qcom_wlan_nv.bin" \
-    "$ROOTFS_DIR/usr/lib/firmware/qcom/msm8937/motorola/aljeter/"
-  cp "$FIRMWARE_SOURCE_DIR/wlan/WCNSS_qcom_wlan_nv.bin" \
-    "$ROOTFS_DIR/usr/lib/firmware/wlan/prima/"
+# 1. WLAN NVRAM and config files
+if [ -d "$FIRMWARE_SOURCE_DIR/wlan" ]; then
+  for wlan_file in "$FIRMWARE_SOURCE_DIR"/wlan/*; do
+    [ -f "$wlan_file" ] || continue
+    cp "$wlan_file" "$ROOTFS_DIR/usr/lib/firmware/wlan/prima/"
+    cp "$wlan_file" "$ROOTFS_DIR/usr/lib/firmware/qcom/msm8937/motorola/aljeter/"
+  done
 fi
 
-# Download standard Adreno GPU firmware if available
+# 2. WCNSS pronto firmware (wcnss.mdt and chunks)
+if [ -d "$FIRMWARE_SOURCE_DIR/modem/image" ]; then
+  for fw in "$FIRMWARE_SOURCE_DIR"/modem/image/wcnss.*; do
+    [ -f "$fw" ] || continue
+    cp "$fw" "$ROOTFS_DIR/usr/lib/firmware/"
+    cp "$fw" "$ROOTFS_DIR/usr/lib/firmware/qcom/msm8937/motorola/aljeter/"
+  done
+
+  # Also copy adsp, venus, modem and mba if present for DSP subsystem loading
+  for fw in "$FIRMWARE_SOURCE_DIR"/modem/image/mba.mbn \
+            "$FIRMWARE_SOURCE_DIR"/modem/image/modem.* \
+            "$FIRMWARE_SOURCE_DIR"/modem/image/adsp.* \
+            "$FIRMWARE_SOURCE_DIR"/modem/image/venus.*; do
+    [ -f "$fw" ] || continue
+    cp "$fw" "$ROOTFS_DIR/usr/lib/firmware/"
+  done
+fi
+
+# 3. Adreno 505/530 GPU microcode
 if [ -s "$ROOT/cache/mainline/gpu-firmware/qcom/a530_pm4.fw" ]; then
-  mkdir -p "$ROOTFS_DIR/usr/lib/firmware/qcom"
   cp "$ROOT/cache/mainline/gpu-firmware/qcom/a530_pm4.fw" "$ROOTFS_DIR/usr/lib/firmware/qcom/"
   cp "$ROOT/cache/mainline/gpu-firmware/qcom/a530_pfp.fw" "$ROOTFS_DIR/usr/lib/firmware/qcom/"
 fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Explicitly refresh the cached Sanders kernel checkout; never builds.
+# Explicitly refresh the cached Aljeter kernel checkout; never builds.
 set -Eeuo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.sh"
 

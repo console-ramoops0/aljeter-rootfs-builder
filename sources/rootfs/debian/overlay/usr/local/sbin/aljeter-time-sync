@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-# Sanders has no reliable battery-backed RTC. Wait for NetworkManager to have
+# Aljeter has no reliable battery-backed RTC. Wait for NetworkManager to have
 # a usable route before enabling timesyncd; otherwise the initial 1970 clock
 # can remain visible until the next manual sync.
 while ! nm-online -q -t 30; do

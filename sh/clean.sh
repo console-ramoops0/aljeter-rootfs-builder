@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Remove only generated transient files from the Sanders builder.
+# Remove only generated transient files from the Aljeter builder.
 set -Eeuo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CACHE_ROOT="$ROOT/cache"
@@ -24,7 +24,7 @@ esac
 
 exec 9>"$CACHE_ROOT/.build.lock"
 flock -n 9 || {
-  printf 'ERROR [sanders]: a build is still running; cleanup aborted.\n' >&2
+  printf 'ERROR [aljeter]: a build is still running; cleanup aborted.\n' >&2
   exit 1
 }
 

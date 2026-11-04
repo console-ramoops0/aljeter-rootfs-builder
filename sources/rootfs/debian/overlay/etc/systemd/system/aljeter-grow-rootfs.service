@@ -1,5 +1,5 @@
 [Unit]
-Description=Grow Sanders root filesystem to the userdata partition
+Description=Grow Aljeter root filesystem to fill partition
 After=local-fs.target
 Before=multi-user.target
 ConditionPathExists=/sbin/resize2fs

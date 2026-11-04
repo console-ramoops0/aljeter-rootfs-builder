@@ -1,5 +1,5 @@
 [Unit]
-Description=Generate unique Sanders SSH host keys
+Description=Generate unique Aljeter SSH host keys
 After=local-fs.target
 Before=ssh.service sshd.service sshd@.service
 ConditionPathIsReadWrite=/etc/ssh
