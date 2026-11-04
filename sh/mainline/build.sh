@@ -52,6 +52,13 @@ if [ -f "$KERNEL_DIR/net/qrtr/smd.c" ] && \
   sed -i '/#include <linux\/soc\/qcom\/qrtr.h>/a #include <linux/mod_devicetable.h>' "$KERNEL_DIR/net/qrtr/smd.c"
 fi
 
+# Fix missing newline in drivers/soc/qcom/Makefile if present
+if [ -f "$KERNEL_DIR/drivers/soc/qcom/Makefile" ] && \
+   grep -q "qcom_sns_reg.oobj-" "$KERNEL_DIR/drivers/soc/qcom/Makefile" 2>/dev/null; then
+  say "Applying missing newline fix in drivers/soc/qcom/Makefile"
+  sed -i 's/qcom_sns_reg.oobj-/qcom_sns_reg.o\nobj-/' "$KERNEL_DIR/drivers/soc/qcom/Makefile"
+fi
+
 ensure_firmware_source
 prepare_gpu_firmware
 [ -s "$LK2ND_IMAGE" ] || die "LK2ND image not found: $LK2ND_IMAGE"
