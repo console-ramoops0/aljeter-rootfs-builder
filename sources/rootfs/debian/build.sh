@@ -175,6 +175,22 @@ configure_timezone() {
   printf '%s\n' "$TIMEZONE" > "$ROOTFS_DIR/etc/timezone"
 }
 
+configure_locale() {
+  say "Configuring C.UTF-8 locale"
+  cat > "$ROOTFS_DIR/etc/default/locale" <<'EOF'
+LANG=C.UTF-8
+LC_ALL=C.UTF-8
+EOF
+}
+
+configure_resolv() {
+  say "Configuring fallback DNS"
+  cat > "$ROOTFS_DIR/etc/resolv.conf" <<'EOF'
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+EOF
+}
+
 mkdir -p "$OUT_DIR" "$RELEASES" "$WORK_ROOT"
 sudo -n rm -rf "$ROOTFS_DIR" "$STAGE"
 mkdir -p "$ROOTFS_DIR" "$STAGE"
@@ -262,6 +278,8 @@ printf '%s\n' aljeter > "$ROOTFS_DIR/etc/hostname"
 install_runtime_overlay
 configure_root_password
 configure_timezone
+configure_locale
+configure_resolv
 printf 'kernel_release=%s\n' "$KERNEL_RELEASE" > "$ROOTFS_DIR/etc/aljeter-kernel-release"
 
 sanitize_rootfs() {

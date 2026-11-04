@@ -112,7 +112,7 @@ if [ "$KEEP_DEBUG_INFO" -eq 0 ]; then
 fi
 
 say "Compiling kernel, $PANEL_NAME DTB and modules with $JOBS jobs"
-kernel_make -j"$JOBS" Image.gz modules "$PANEL_DTB_TARGET"
+kernel_make -j"$JOBS" Image.gz modules dtbs
 
 KREL="$(kernel_release)"
 BOOT_DIR="$KERNEL_OUT/arch/$ARCH/boot"
@@ -182,6 +182,7 @@ make_boot_image() {
 }
 
 make_boot_image "$STAGE/Image.gz" "$STAGE/dt.img" "$BOOT_IMAGE"
+make_boot_image "$STAGE/Image.gz-dtb" "$STAGE/dt.img" "$STAGE/boot-dtb.img"
 
 cat > "$STAGE/bootimg-info.txt" <<EOF
 format=android-bootimg-v0
