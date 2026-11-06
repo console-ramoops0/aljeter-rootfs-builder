@@ -5,6 +5,15 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      target:
+        description: Build target (all, kernel, rootfs)
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - kernel
+          - rootfs
       suite:
         description: Debian suite (trixie or bookworm)
         required: true
@@ -36,11 +45,13 @@ jobs:
           sudo update-binfmts --enable qemu-aarch64 || true
 
       - name: Build Mainline Kernel & Boot Image
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'kernel' }}
         run: |
           set -eux
           bash sh/build.sh kernel
 
       - name: Build Debian ARM64 RootFS
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'rootfs' }}
         run: |
           set -eux
           export ALJETER_DEBIAN_SUITE="${{ github.event.inputs.suite || 'trixie' }}"
