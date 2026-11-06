@@ -59,6 +59,13 @@ if [ -f "$KERNEL_DIR/drivers/soc/qcom/Makefile" ] && \
   sed -i 's/qcom_sns_reg.oobj-/qcom_sns_reg.o\nobj-/' "$KERNEL_DIR/drivers/soc/qcom/Makefile"
 fi
 
+# Ensure USB dr_mode is peripheral for reliable USB gadget enumeration
+ALJETER_DTS="$KERNEL_DIR/arch/arm64/boot/dts/qcom/msm8937-motorola-aljeter.dts"
+if [ -f "$ALJETER_DTS" ] && grep -q 'dr_mode = "otg"' "$ALJETER_DTS"; then
+  say "Setting USB dr_mode to peripheral in aljeter.dts"
+  sed -i 's/dr_mode = "otg"/dr_mode = "peripheral"/' "$ALJETER_DTS"
+fi
+
 ensure_firmware_source
 prepare_gpu_firmware
 [ -s "$LK2ND_IMAGE" ] || die "LK2ND image not found: $LK2ND_IMAGE"
