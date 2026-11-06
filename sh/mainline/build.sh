@@ -66,6 +66,15 @@ if [ -f "$ALJETER_DTS" ] && grep -q 'dr_mode = "otg"' "$ALJETER_DTS"; then
   sed -i 's/dr_mode = "otg"/dr_mode = "peripheral"/' "$ALJETER_DTS"
 fi
 
+# Ensure critical display and USB regulators are always-on
+if [ -f "$ALJETER_DTS" ] && ! grep -A 5 'pm8937_l6: l6 {' "$ALJETER_DTS" | grep -q 'regulator-always-on;'; then
+  say "Adding regulator-always-on to display and USB regulators in aljeter.dts"
+  sed -i '/pm8937_l2: l2 {/a \\t\t\tregulator-always-on;\n\t\t\tregulator-boot-on;' "$ALJETER_DTS"
+  sed -i '/pm8937_l6: l6 {/a \\t\t\tregulator-always-on;\n\t\t\tregulator-boot-on;' "$ALJETER_DTS"
+  sed -i '/pm8937_l7: l7 {/a \\t\t\tregulator-always-on;\n\t\t\tregulator-boot-on;' "$ALJETER_DTS"
+  sed -i '/pm8937_l13: l13 {/a \\t\t\tregulator-always-on;\n\t\t\tregulator-boot-on;' "$ALJETER_DTS"
+fi
+
 ensure_firmware_source
 prepare_gpu_firmware
 [ -s "$LK2ND_IMAGE" ] || die "LK2ND image not found: $LK2ND_IMAGE"
