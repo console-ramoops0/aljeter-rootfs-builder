@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_ROOT="$ROOT/build"
 CACHE_ROOT="$ROOT/cache"
 
-KERNEL_URL="${ALJETER_KERNEL_URL:-https://gitlab.com/vanadium-oss/msm8937/Mainline/linux.git}"
+KERNEL_URL="${ALJETER_KERNEL_URL:-https://gitlab.com/vanadium-oss/msm89x7/Mainline/linux.git}"
 KERNEL_REF="${ALJETER_KERNEL_REF:-msm89x7/latest}"
 KERNEL_DIR="${ALJETER_KERNEL_CACHE_DIR:-$CACHE_ROOT/sources/linux}"
 FIRMWARE_URL="${ALJETER_FIRMWARE_URL:-https://gitlab.com/vanadium-oss/motorola-msm8953/mainline/sanders-firmware.git}"

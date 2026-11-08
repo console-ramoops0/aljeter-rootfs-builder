@@ -15,7 +15,7 @@ ALJETER MAINLINE & DEBIAN ROOTFS BUILDER (Moto G6 Play - MSM8937)
   bash sh/build.sh all [--clean|--reuse]
 
 The builder clones the kernel branch msm89x7/latest from
-https://gitlab.com/vanadium-oss/msm8937/Mainline/linux.git into its cache.
+https://gitlab.com/vanadium-oss/msm89x7/Mainline/linux.git into its cache.
 
 The builder creates a Debian arm64 rootfs with:
   - USB Gadget networking (RNDIS / CDC-NCM with static IP 172.16.42.1)
