@@ -1,26 +1,73 @@
 #!/bin/sh
 set -e
 
-[ -f /usr/lib/firmware/wcnss.mdt ] && exit 0
+[ -f /usr/lib/firmware/wcnss.mdt ] && [ -f /usr/lib/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin ] && exit 0
 
-MODEM=$(ls /dev/disk/by-partlabel/modem* /dev/disk/by-partlabel/NON-HLOS* 2>/dev/null | head -n 1)
-[ -n "$MODEM" ] || exit 0
+find_partition() {
+    pattern="$1"
+    for p in /dev/disk/by-partlabel/*; do
+        [ -e "$p" ] || continue
+        case "$(basename "$p" | tr '[:upper:]' '[:lower:]')" in
+            *$pattern*)
+                echo "$p"
+                return 0
+                ;;
+        esac
+    done
+    for u in /sys/class/block/*/uevent; do
+        if grep -qi "PARTNAME=.*$pattern" "$u" 2>/dev/null; then
+            devname=$(basename "$(dirname "$u")")
+            echo "/dev/$devname"
+            return 0
+        fi
+    done
+    return 1
+}
 
-TMPMNT="/mnt/modem_firmware"
-mkdir -p "$TMPMNT" /usr/lib/firmware/wlan/prima /usr/lib/firmware/qcom/msm8937/motorola/aljeter
-mount -o ro -t vfat "$MODEM" "$TMPMNT" 2>/dev/null || mount -o ro "$MODEM" "$TMPMNT" 2>/dev/null || exit 0
+mkdir -p /usr/lib/firmware/wlan/prima /usr/lib/firmware/qcom/msm8937/motorola/aljeter
 
-if [ -d "$TMPMNT/image" ]; then
-    cp -n "$TMPMNT"/image/wcnss.* /usr/lib/firmware/ 2>/dev/null || true
-    cp -n "$TMPMNT"/image/wcnss.* /usr/lib/firmware/qcom/msm8937/motorola/aljeter/ 2>/dev/null || true
-    cp -n "$TMPMNT"/image/wlan/prima/* /usr/lib/firmware/wlan/prima/ 2>/dev/null || true
+MODEM=$(find_partition modem || find_partition non-hlos || true)
+if [ -n "$MODEM" ]; then
+    TMPMNT="/mnt/modem_firmware"
+    mkdir -p "$TMPMNT"
+    if mount -o ro -t vfat "$MODEM" "$TMPMNT" 2>/dev/null || mount -o ro "$MODEM" "$TMPMNT" 2>/dev/null; then
+        SRC_DIR="$TMPMNT"
+        [ -d "$TMPMNT/image" ] && SRC_DIR="$TMPMNT/image"
+
+        cp -n "$SRC_DIR"/wcnss.* /usr/lib/firmware/ 2>/dev/null || true
+        cp -n "$SRC_DIR"/wcnss.* /usr/lib/firmware/qcom/msm8937/motorola/aljeter/ 2>/dev/null || true
+
+        if [ -d "$SRC_DIR/wlan/prima" ]; then
+            cp -n "$SRC_DIR"/wlan/prima/* /usr/lib/firmware/wlan/prima/ 2>/dev/null || true
+        elif [ -d "$SRC_DIR/wlan" ]; then
+            cp -n "$SRC_DIR"/wlan/* /usr/lib/firmware/wlan/prima/ 2>/dev/null || true
+        fi
+        umount "$TMPMNT" 2>/dev/null || true
+        rmdir "$TMPMNT" 2>/dev/null || true
+    fi
 fi
 
-umount "$TMPMNT" 2>/dev/null || true
-rmdir "$TMPMNT" 2>/dev/null || true
+if [ ! -f /usr/lib/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin ]; then
+    PERSIST=$(find_partition persist || true)
+    if [ -n "$PERSIST" ]; then
+        TMPMNT="/mnt/persist_firmware"
+        mkdir -p "$TMPMNT"
+        if mount -o ro "$PERSIST" "$TMPMNT" 2>/dev/null; then
+            NV=$(find "$TMPMNT" -name "WCNSS_qcom_wlan_nv.bin" 2>/dev/null | head -n 1)
+            if [ -n "$NV" ]; then
+                cp -n "$NV" /usr/lib/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin 2>/dev/null || true
+            fi
+            umount "$TMPMNT" 2>/dev/null || true
+            rmdir "$TMPMNT" 2>/dev/null || true
+        fi
+    fi
+fi
 
 modprobe -r wcn36xx qcom_wcnss_pil qcom_wcnss 2>/dev/null || true
-modprobe qcom_wcnss
-modprobe qcom_wcnss_pil
-modprobe wcn36xx
+modprobe qcom_wcnss 2>/dev/null || true
+modprobe qcom_wcnss_pil 2>/dev/null || true
+modprobe wcn36xx 2>/dev/null || true
 rfkill unblock all 2>/dev/null || true
+nmcli device wifi rescan 2>/dev/null || true
+exit 0
+
