@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+[ -f /usr/lib/firmware/wcnss.mdt ] && exit 0
+
+MODEM=$(ls /dev/disk/by-partlabel/modem* /dev/disk/by-partlabel/NON-HLOS* 2>/dev/null | head -n 1)
+[ -n "$MODEM" ] || exit 0
+
+TMPMNT="/mnt/modem_firmware"
+mkdir -p "$TMPMNT" /usr/lib/firmware/wlan/prima /usr/lib/firmware/qcom/msm8937/motorola/aljeter
+mount -o ro -t vfat "$MODEM" "$TMPMNT" 2>/dev/null || mount -o ro "$MODEM" "$TMPMNT" 2>/dev/null || exit 0
+
+if [ -d "$TMPMNT/image" ]; then
+    cp -n "$TMPMNT"/image/wcnss.* /usr/lib/firmware/ 2>/dev/null || true
+    cp -n "$TMPMNT"/image/wcnss.* /usr/lib/firmware/qcom/msm8937/motorola/aljeter/ 2>/dev/null || true
+    cp -n "$TMPMNT"/image/wlan/prima/* /usr/lib/firmware/wlan/prima/ 2>/dev/null || true
+fi
+
+umount "$TMPMNT" 2>/dev/null || true
+rmdir "$TMPMNT" 2>/dev/null || true
+
+modprobe -r wcn36xx qcom_wcnss_pil qcom_wcnss 2>/dev/null || true
+modprobe qcom_wcnss
+modprobe qcom_wcnss_pil
+modprobe wcn36xx
+rfkill unblock all 2>/dev/null || true

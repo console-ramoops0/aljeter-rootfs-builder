@@ -82,9 +82,11 @@ for overlay_file in \
   etc/systemd/system/aljeter-ssh-hostkeys.service \
   etc/systemd/system/aljeter-time-sync.service \
   etc/systemd/system/aljeter-grow-rootfs.service \
+  etc/systemd/system/aljeter-wifi-firmware.service \
   etc/systemd/system/usb-gadget.service \
   usr/local/sbin/usb-gadget.sh \
   usr/local/sbin/aljeter-time-sync \
+  usr/local/sbin/aljeter-wifi-firmware \
   usr/local/sbin/aljeter-grow-rootfs; do
   [ -f "$OVERLAY_DIR/$overlay_file" ] || die \
     "Runtime overlay file is missing: $OVERLAY_DIR/$overlay_file"
@@ -128,6 +130,7 @@ install_runtime_overlay() {
   rsync -a "$OVERLAY_DIR/" "$ROOTFS_DIR/"
   chmod 0755 "$ROOTFS_DIR/usr/local/sbin/usb-gadget.sh" \
     "$ROOTFS_DIR/usr/local/sbin/aljeter-time-sync" \
+    "$ROOTFS_DIR/usr/local/sbin/aljeter-wifi-firmware" \
     "$ROOTFS_DIR/usr/local/sbin/aljeter-grow-rootfs"
 
   mkdir -p \
@@ -152,6 +155,8 @@ EOF
     "$ROOTFS_DIR/etc/systemd/system/multi-user.target.wants/aljeter-time-sync.service"
   ln -sfn ../aljeter-grow-rootfs.service \
     "$ROOTFS_DIR/etc/systemd/system/multi-user.target.wants/aljeter-grow-rootfs.service"
+  ln -sfn ../aljeter-wifi-firmware.service \
+    "$ROOTFS_DIR/etc/systemd/system/multi-user.target.wants/aljeter-wifi-firmware.service"
   ln -sfn /lib/systemd/system/NetworkManager.service \
     "$ROOTFS_DIR/etc/systemd/system/multi-user.target.wants/NetworkManager.service" || true
   ln -sfn /lib/systemd/system/haveged.service \

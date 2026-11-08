@@ -1,0 +1,13 @@
+[Unit]
+Description=Extract Aljeter WCNSS Wi-Fi firmware from modem partition
+After=local-fs.target
+Before=network-pre.target NetworkManager.service
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/aljeter-wifi-firmware
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
